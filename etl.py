@@ -3,7 +3,6 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 import re
-from routes import app
 import os
 
 
