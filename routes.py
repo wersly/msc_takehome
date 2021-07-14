@@ -4,7 +4,6 @@ import sqlite3
 import os
 
 app = Flask(__name__)
-# os.environ["DB_FILE"] = "orchestra.db"
 
 reports = [
     {
@@ -28,7 +27,6 @@ reports = [
 
 def get_db():
 
-    # db_file = "orchestra.db"
     db = getattr(g, "_database", None)
 
     if db is None:

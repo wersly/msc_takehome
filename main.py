@@ -12,9 +12,6 @@ import os
 # - Multiple Players Report: reverse of the above - should names be aggregated?
 # TODO: integration tests for your queries
 
-# config
-os.environ["DB_FILE"] = "orchestra.db"
-
 if __name__ == '__main__':
 
     db_setup(os.environ.get("DB_FILE", "orchestra.db"))
