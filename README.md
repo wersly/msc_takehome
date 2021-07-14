@@ -1,3 +1,9 @@
+# Run the app
+```
+python main.py
+```
+
+# Instructions
 Using any Python web framework (Django, Flask, etc.), and a SQLite database (a file), create a web
 application using the three attached files (names.txt, instruments.csv, and name_instrument.csv),
 please write code that:

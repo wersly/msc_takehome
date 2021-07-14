@@ -4,6 +4,7 @@ import sqlite3
 import os
 
 app = Flask(__name__)
+app.config.from_object("config.Config")
 
 reports = [
     {
@@ -25,12 +26,12 @@ reports = [
 ]
 
 
-def get_db():
+def get_db(db_file):
 
     db = getattr(g, "_database", None)
 
     if db is None:
-        conn = g._database = sqlite3.connect(os.environ.get("DB_FILE", "orchestra.db"))
+        conn = g._database = sqlite3.connect(db_file)
 
     return conn
 
@@ -71,7 +72,7 @@ def close_connection(exception):
 @app.route("/report/<view_name>")
 def report(view_name):
 
-    conn = get_db()
+    conn = get_db(app.config.get("DB_FILE"))
     query = "select * from {view_name}".format(view_name=view_name)
     df = process_report_df(pd.read_sql(query, conn))
     return df.to_html(index=False)
