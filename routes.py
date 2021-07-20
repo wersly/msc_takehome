@@ -1,7 +1,7 @@
 from flask import Flask, render_template, g
 import pandas as pd
 import sqlite3
-import os
+
 
 app = Flask(__name__)
 app.config.from_object("config.Config")

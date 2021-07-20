@@ -1,6 +1,5 @@
 from etl import db_setup
 from routes import app
-import os
 
 
 if __name__ == '__main__':
