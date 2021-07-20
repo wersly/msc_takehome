@@ -33,10 +33,6 @@ CREATE TABLE assignments (
 
 -- REPORTS
 -- 1. A report showing the name, instrument, and section for all musicians.
-/*
-  TODO: does this include people who are currently not assigned an instrument?
-  TODO: how should we render people who play multiple instruments - as multiple rows, or as a single, compressed row?
-*/
 CREATE VIEW all_musicians AS
   SELECT
     n.first_name, n.middle_name , n.last_name , i.instrument , i.section

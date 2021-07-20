@@ -4,21 +4,24 @@ import pandas as pd
 
 
 class TestExpandNameFn(unittest.TestCase):
+    """
+    Tests the etl.expand_name_fn against the following name cases:
+    - first last
+    - first middle last
+    - first
+    - last, first
+    - last, first middle
+    - last, f. middle
+    - last, first m.
 
-    # X first last
-    # X first middle last
-    # X first
-    # X last, first
-    # X last, first middle
-    # X last, f. middle
-    # X last, first m.
+    These are the styles of naming that we get in `names.txt`
+    """
 
     def _apply_fn(self, test_dict):
 
         t = pd.DataFrame([test_dict])
         t = t.apply(etl.expand_name_fn, axis=1, name_col="Name")
-        t = t[["first_name", "middle_name", "last_name"]].to_dict("records")
-        return t
+        return t[["first_name", "middle_name", "last_name"]].to_dict("records")
 
 
     def test_first_last(self):
