@@ -1,58 +1,58 @@
-CREATE TABLE names (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  first_name VARCHAR(255) NOT NULL,
-  middle_name VARCHAR(255),
-  last_name VARCHAR(255)
+create table names (
+  id integer primary key autoincrement,
+  first_name varchar(255) not null,
+  middle_name varchar(255),
+  last_name varchar(255)
 );
 
 -- Q: should there be a unique index on instrument?
 -- A: probably not, but it would make sense to have a unique constraint on the combination of instrument/section
 -- ie, one instrument can exist in multiple different section designations, but that instrument should not be duplicated within its section
-CREATE TABLE instruments (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  instrument VARCHAR(255),
-  section VARCHAR(255),
-  UNIQUE(instrument, section)
+create table instruments (
+  id integer primary key autoincrement,
+  instrument varchar(255),
+  section varchar(255),
+  unique(instrument, section)
 );
 
-CREATE TABLE assignments_by_name(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  instrument VARCHAR(255) NOT NULL,
-  first_name VARCHAR(255) NOT NULL,
-  middle_name VARCHAR(255),
-  last_name VARCHAR(255)
+create table assignments_by_name(
+  id integer primary key autoincrement,
+  instrument varchar(255) not null,
+  first_name varchar(255) not null,
+  middle_name varchar(255),
+  last_name varchar(255)
 );
 
-CREATE TABLE assignments (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  player_id INTEGER,
-  instrument_id INTEGER,
-  FOREIGN KEY (player_id) REFERENCES names(id),
-  FOREIGN KEY (instrument_id) REFERENCES instruments(id)
+create table assignments (
+  id integer primary key autoincrement,
+  player_id integer,
+  instrument_id integer,
+  foreign key (player_id) references names(id),
+  foreign key (instrument_id) references instruments(id)
 );
 
 -- REPORTS
 -- 1. A report showing the name, instrument, and section for all musicians.
-CREATE VIEW all_musicians AS
-  SELECT
+create view all_musicians as
+  select
     n.first_name, n.middle_name , n.last_name , i.instrument , i.section
-    FROM
+    from
       names n
-      LEFT JOIN assignments a
-          ON n.id = a.player_id
-      LEFT JOIN instruments i
-          ON i.id = a.instrument_id
-   ORDER BY n.id, i.id ASC;
+      left join assignments a
+          on n.id = a.player_id
+      left join instruments i
+          on i.id = a.instrument_id
+   order by n.id, i.id asc;
 
 -- 2. A report showing the instruments that don't yet have musicians (i.e. no one plays the trumpet), and their sections, sorted by section, alphabetically in ascending order.
-CREATE VIEW instruments_without_musicians AS
-  SELECT instrument , section
-    FROM instruments i
-   WHERE id NOT IN (SELECT instrument_id FROM assignments)
-   ORDER BY section ASC;
+create view instruments_without_musicians as
+  select instrument , section
+    from instruments i
+   where id not in (select instrument_id from assignments)
+   order by section asc;
 
 -- 3. A report showing any musicians that play two or more instruments, their instrument, and section.
-CREATE VIEW multi_instrumentalists AS
+create view multi_instrumentalists as
   with instrument_count as (
     select player_id, instrument_id,
            count(instrument_id) over (partition by player_id) as num_instruments
@@ -72,7 +72,7 @@ CREATE VIEW multi_instrumentalists AS
    order by n.id, i.id asc;
 
 -- 4. A report showing any instruments that are played by multiple musicians, as well as the musician names and sections.
-CREATE VIEW multiple_players AS
+create view multiple_players as
   with player_count as (
 	  select player_id, instrument_id,
 	         count(player_id) over (partition by instrument_id) as num_players
