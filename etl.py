@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
@@ -19,13 +20,6 @@ def create_db_file(db_file):
     db_file_path.touch()
 
 
-def get_db_connection(db_file):
-
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    return conn, cursor
-
-
 def run_sql_script(conn, cursor, sql_file):
 
     with open(sql_file, 'r') as f:
@@ -33,8 +27,6 @@ def run_sql_script(conn, cursor, sql_file):
 
     cursor.executescript(sql)
     conn.commit()
-
-    return conn, cursor
 
 
 def expand_name_fn(df, name_col=None):
@@ -89,81 +81,78 @@ def load_df(conn, cursor, df, sql):
     cursor.executemany(sql, records)
     conn.commit()
 
-    return conn, cursor
-
 
 def db_setup(db_file):
 
     # initialize db
     create_db_file(db_file)
-    conn, cursor = get_db_connection(db_file)
-    conn, cursor = run_sql_script(conn, cursor, "sql/create_schema_sqlite.sql")
 
-    # instruments ETL
-    instruments_df = pre_process_df(pd.read_csv("instruments.csv", delimiter=",", index_col=False))
-    conn, cursor = load_df(conn,
-                           cursor,
-                           instruments_df,
-                           "INSERT INTO instruments(instrument, section) VALUES (?, ?)")
+    with closing(sqlite3.connect(db_file)) as conn:
+        with closing(conn.cursor()) as cursor:
 
-    # names ETL
-    names_df = pre_process_df(pd.read_csv("names.txt", delimiter="\t", index_col=False, names=["Name"]))
-    names_df["first_name"], names_df["middle_name"], names_df["last_name"] = [None, None, None]
-    names_df = names_df.apply(expand_name_fn, axis=1, name_col="Name")
-    conn, cursor = load_df(conn,
-                           cursor,
-                           names_df[["first_name", "middle_name", "last_name"]],
-                           "INSERT INTO names(first_name, middle_name, last_name) VALUES (?, ?, ?)")
+            run_sql_script(conn, cursor, "sql/create_schema_sqlite.sql")
 
-    # assignments_by_name ETL
-    assignments_df = pre_process_df(pd.read_csv("name_instrument.csv", delimiter=",", index_col=False))
-    assignments_df["first_name"], assignments_df["middle_name"], assignments_df["last_name"] = [None, None, None]
-    assignments_df = assignments_df.apply(expand_name_fn, axis=1, name_col="Name")
-    conn, cursor = load_df(conn,
-                           cursor,
-                           assignments_df[["Instrument", "first_name", "middle_name", "last_name"]],
-                           "INSERT INTO assignments_by_name(instrument, first_name, middle_name, last_name) VALUES (?, ?, ?, ?)")
+            # instruments ETL
+            instruments_df = pre_process_df(pd.read_csv("instruments.csv", delimiter=",", index_col=False))
+            load_df(conn,
+                    cursor,
+                    instruments_df,
+                    "INSERT INTO instruments(instrument, section) VALUES (?, ?)")
 
-    # create db relationships between assignments_by_name entries and names/instruments tables
-    assignments_sql = [
-        """
-        INSERT INTO assignments (player_id, instrument_id)
-        WITH normalized_assignments as (
-        SELECT
-        instrument,
-        CASE
-	    WHEN first_name LIKE ? THEN middle_name
-	    WHEN first_name LIKE ? THEN middle_name
-	    ELSE first_name
-        END AS nick_name,
-        COALESCE (last_name, 'UNDEFINED') AS last_name
-        FROM assignments_by_name
-        )
-        -- handle assignments where n.first_name / n.last_name is used
-        SELECT n.id, i.id
-        FROM normalized_assignments a
-        INNER JOIN names n, instruments i
-        ON n.first_name = a.nick_name
-        AND COALESCE(n.last_name, 'UNDEFINED') = a.last_name
-        AND i.instrument = a.instrument
-        UNION ALL
-        -- handle assignments where n.middle_name / n.last_name is used
-        SELECT n.id, i.id
-        FROM normalized_assignments a
-        INNER JOIN names n, instruments i
-        ON n.middle_name = a.nick_name
-        AND COALESCE(n.last_name, 'UNDEFINED') = a.last_name
-        AND i.instrument = a.instrument;
-        """,
-        ["_.", "_"]
-    ]
+            # names ETL
+            names_df = pre_process_df(pd.read_csv("names.txt", delimiter="\t", index_col=False, names=["Name"]))
+            names_df["first_name"], names_df["middle_name"], names_df["last_name"] = [None, None, None]
+            names_df = names_df.apply(expand_name_fn, axis=1, name_col="Name")
+            load_df(conn,
+                    cursor,
+                    names_df[["first_name", "middle_name", "last_name"]],
+                    "INSERT INTO names(first_name, middle_name, last_name) VALUES (?, ?, ?)")
 
-    cursor.execute(*assignments_sql)
-    conn.commit()
+            # assignments_by_name ETL
+            assignments_df = pre_process_df(pd.read_csv("name_instrument.csv", delimiter=",", index_col=False))
+            assignments_df["first_name"], assignments_df["middle_name"], assignments_df["last_name"] = [None, None, None]
+            assignments_df = assignments_df.apply(expand_name_fn, axis=1, name_col="Name")
+            load_df(conn,
+                    cursor,
+                    assignments_df[["Instrument", "first_name", "middle_name", "last_name"]],
+                    "INSERT INTO assignments_by_name(instrument, first_name, middle_name, last_name) VALUES (?, ?, ?, ?)")
 
-    # close out
-    cursor.close()
-    conn.close()
+            # create db relationships between assignments_by_name entries and names/instruments tables
+            assignments_sql = [
+                """
+                INSERT INTO assignments (player_id, instrument_id)
+                WITH normalized_assignments as (
+                SELECT
+                instrument,
+                CASE
+	            WHEN first_name LIKE ? THEN middle_name
+	            WHEN first_name LIKE ? THEN middle_name
+	            ELSE first_name
+                END AS nick_name,
+                COALESCE (last_name, 'UNDEFINED') AS last_name
+                FROM assignments_by_name
+                )
+                -- handle assignments where n.first_name / n.last_name is used
+                SELECT n.id, i.id
+                FROM normalized_assignments a
+                INNER JOIN names n, instruments i
+                ON n.first_name = a.nick_name
+                AND COALESCE(n.last_name, 'UNDEFINED') = a.last_name
+                AND i.instrument = a.instrument
+                UNION ALL
+                -- handle assignments where n.middle_name / n.last_name is used
+                SELECT n.id, i.id
+                FROM normalized_assignments a
+                INNER JOIN names n, instruments i
+                ON n.middle_name = a.nick_name
+                AND COALESCE(n.last_name, 'UNDEFINED') = a.last_name
+                AND i.instrument = a.instrument;
+                """,
+                ["_.", "_"]  # list of query params
+            ]
+
+            cursor.execute(*assignments_sql)
+            conn.commit()
 
 
 if __name__ == '__main__':
