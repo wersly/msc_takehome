@@ -1,5 +1,5 @@
 import unittest
-import etl
+import msc_takehome.etl as etl
 import pandas as pd
 import sqlite3
 import os
@@ -173,6 +173,12 @@ class ReportsIntegrationTest(unittest.TestCase):
 
         # run the whole etl process
         etl.db_setup(os.environ.get("DB_FILE", "orchestra.db"))
+
+
+    @classmethod
+    def tearDownClass(cls):
+
+        os.remove(os.environ.get("DB_FILE", "orchestra.db"))
 
 
     def setUp(self):

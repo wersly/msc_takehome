@@ -6,4 +6,6 @@ lib64
 lib
 include
 bin
-notes/*
+dist
+notes
+*.egg-info

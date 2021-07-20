@@ -1,0 +1,8 @@
+<!doctype html>
+<title>Orchestra</title>
+<h1>Orchestra Reports</h1>
+<ol>
+  {% for report in reports %}
+    <li><a href="{{ url_for('report', view_name=report.view) }}">{{ report.name }}</a></li>
+  {% endfor %}
+</ol>

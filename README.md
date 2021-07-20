@@ -1,9 +1,21 @@
-# Run the app
+# Create Package
 ```
-python main.py
+# create package
+python setup.py sdist
+
+# check package contents
+tar --list -f dist/msc_takehome-1.0.0.tar.gz
+
+# register package for local development
+python setup.py develop
 ```
 
-# Run the tests
+# Run the App
+```
+python msc_takehome/main.py
+```
+
+# Run the Tests
 ```
 python -m unittest discover
 ```
