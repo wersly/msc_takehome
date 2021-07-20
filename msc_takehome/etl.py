@@ -1,5 +1,6 @@
 import sqlite3
 from contextlib import closing
+from importlib import resources
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
@@ -18,15 +19,6 @@ def create_db_file(db_file):
         db_file_path.rename("{}.{}.bak".format(db_file, now))
 
     db_file_path.touch()
-
-
-def run_sql_script(conn, cursor, sql_file):
-
-    with open(sql_file, 'r') as f:
-        sql = f.read()
-
-    cursor.executescript(sql)
-    conn.commit()
 
 
 def expand_name_fn(df, name_col=None):
@@ -90,32 +82,36 @@ def db_setup(db_file):
     with closing(sqlite3.connect(db_file)) as conn:
         with closing(conn.cursor()) as cursor:
 
-            run_sql_script(conn, cursor, "sql/create_schema_sqlite.sql")
+            cursor.executescript(resources.read_text("msc_takehome.sql", "create_schema_sqlite.sql"))
+            conn.commit()
 
             # instruments ETL
-            instruments_df = pre_process_df(pd.read_csv("instruments.csv", delimiter=",", index_col=False))
-            load_df(conn,
-                    cursor,
-                    instruments_df,
-                    "INSERT INTO instruments(instrument, section) VALUES (?, ?)")
+            with resources.open_text("msc_takehome.data", "instruments.csv") as instruments:
+                instruments_df = pre_process_df(pd.read_csv(instruments, delimiter=",", index_col=False))
+                load_df(conn,
+                        cursor,
+                        instruments_df,
+                        "INSERT INTO instruments(instrument, section) VALUES (?, ?)")
 
             # names ETL
-            names_df = pre_process_df(pd.read_csv("names.txt", delimiter="\t", index_col=False, names=["Name"]))
-            names_df["first_name"], names_df["middle_name"], names_df["last_name"] = [None, None, None]
-            names_df = names_df.apply(expand_name_fn, axis=1, name_col="Name")
-            load_df(conn,
-                    cursor,
-                    names_df[["first_name", "middle_name", "last_name"]],
-                    "INSERT INTO names(first_name, middle_name, last_name) VALUES (?, ?, ?)")
+            with resources.open_text("msc_takehome.data", "names.txt") as names:
+                names_df = pre_process_df(pd.read_csv(names, delimiter="\t", index_col=False, names=["Name"]))
+                names_df["first_name"], names_df["middle_name"], names_df["last_name"] = [None, None, None]
+                names_df = names_df.apply(expand_name_fn, axis=1, name_col="Name")
+                load_df(conn,
+                        cursor,
+                        names_df[["first_name", "middle_name", "last_name"]],
+                        "INSERT INTO names(first_name, middle_name, last_name) VALUES (?, ?, ?)")
 
             # assignments_by_name ETL
-            assignments_df = pre_process_df(pd.read_csv("name_instrument.csv", delimiter=",", index_col=False))
-            assignments_df["first_name"], assignments_df["middle_name"], assignments_df["last_name"] = [None, None, None]
-            assignments_df = assignments_df.apply(expand_name_fn, axis=1, name_col="Name")
-            load_df(conn,
-                    cursor,
-                    assignments_df[["Instrument", "first_name", "middle_name", "last_name"]],
-                    "INSERT INTO assignments_by_name(instrument, first_name, middle_name, last_name) VALUES (?, ?, ?, ?)")
+            with resources.open_text("msc_takehome.data", "name_instrument.csv") as name_instruments:
+                assignments_df = pre_process_df(pd.read_csv(name_instruments, delimiter=",", index_col=False))
+                assignments_df["first_name"], assignments_df["middle_name"], assignments_df["last_name"] = [None, None, None]
+                assignments_df = assignments_df.apply(expand_name_fn, axis=1, name_col="Name")
+                load_df(conn,
+                        cursor,
+                        assignments_df[["Instrument", "first_name", "middle_name", "last_name"]],
+                        "INSERT INTO assignments_by_name(instrument, first_name, middle_name, last_name) VALUES (?, ?, ?, ?)")
 
             # create db relationships between assignments_by_name entries and names/instruments tables
             assignments_sql = [
