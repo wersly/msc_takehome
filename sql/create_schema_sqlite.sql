@@ -45,7 +45,8 @@ CREATE VIEW all_musicians AS
       LEFT JOIN assignments a
           ON n.id = a.player_id
       LEFT JOIN instruments i
-          ON i.id = a.instrument_id;
+          ON i.id = a.instrument_id
+   ORDER BY n.id, i.id ASC;
 
 -- 2. A report showing the instruments that don't yet have musicians (i.e. no one plays the trumpet), and their sections, sorted by section, alphabetically in ascending order.
 CREATE VIEW instruments_without_musicians AS
@@ -71,7 +72,8 @@ CREATE VIEW multi_instrumentalists AS
          inner join multi_instrumentalists m
              on n.id = m.player_id
          inner join instruments i
-             on i.id = m.instrument_id;
+             on i.id = m.instrument_id
+   order by n.id, i.id asc;
 
 -- 4. A report showing any instruments that are played by multiple musicians, as well as the musician names and sections.
 CREATE VIEW multiple_players AS
@@ -91,3 +93,4 @@ CREATE VIEW multiple_players AS
 	           on n.id = m.player_id
 	       inner join instruments i
 	           on i.id = m.instrument_id
+   order by i.id, n.id asc;
