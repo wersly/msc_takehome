@@ -69,7 +69,6 @@ def pre_process_df(df):
 def load_df(conn, cursor, df, sql):
 
     records = df.to_records(index=False)
-
     cursor.executemany(sql, records)
     conn.commit()
 
