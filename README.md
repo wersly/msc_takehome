@@ -1,5 +1,8 @@
 # Create Package
 ```
+# pip freeze, excluding locally developed packages
+pip freeze --exclude-editable > requirements.txt
+
 # create package
 python setup.py sdist
 
