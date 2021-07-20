@@ -3,6 +3,11 @@
 python main.py
 ```
 
+# Run the tests
+```
+python -m unittest discover
+```
+
 # Instructions
 Using any Python web framework (Django, Flask, etc.), and a SQLite database (a file), create a web
 application using the three attached files (names.txt, instruments.csv, and name_instrument.csv),
