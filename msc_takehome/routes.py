@@ -67,12 +67,16 @@ def close_connection(exception):
     return None
 
 
-# TODO: how fancy does the output table need to be?
-# - Should a header tag (eg h1) be applied to better name the table?
 @app.route("/report/<view_name>")
 def report(view_name):
 
     conn = get_db(app.config.get("DB_FILE"))
     query = "select * from {view_name}".format(view_name=view_name)
     df = process_report_df(pd.read_sql(query, conn))
-    return df.to_html(index=False)
+    name = list(filter(lambda x: x["view"] == view_name, reports))[0]["name"]
+
+    return render_template(
+        "report.html",
+        content=df.to_html(index=False),
+        name=name
+    )

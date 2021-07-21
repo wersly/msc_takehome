@@ -1,4 +1,5 @@
 include requirements.txt
 recursive-include msc_takehome/templates/ *
+recursive-include msc_takehome/static/ *
 recursive-include msc_takehome/sql/ *
 recursive-include msc_takehome/data/ *
