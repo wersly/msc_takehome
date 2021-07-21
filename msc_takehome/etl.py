@@ -31,11 +31,11 @@ def expand_name_fn(df, name_col=None):
 
     if re.match(first_last, df[name_col]):
         f, l = [x.strip() for x in df[name_col].split(" ")]
-        df["first_name"], df["last_name"] = [f, l]
+        df["first_name"], df["last_name"] = f, l
 
     elif re.match(first_middle_last, df[name_col]):
         f, m, l = [x.strip() for x in df[name_col].split(" ")]
-        df["first_name"], df["middle_name"], df["last_name"] = [f, m, l]
+        df["first_name"], df["middle_name"], df["last_name"] = f, m, l
 
     elif re.match(first_only, df[name_col]):
         f = df[name_col].strip()
@@ -43,12 +43,12 @@ def expand_name_fn(df, name_col=None):
 
     elif re.match(last_first, df[name_col]):
         l, f = [x.strip() for x in df[name_col].split(",")]
-        df["first_name"], df["last_name"] = [f, l]
+        df["first_name"], df["last_name"] = f, l
 
     elif re.match(last_first_middle, df[name_col]):
         l, x = [x.strip() for x in df[name_col].split(",")]
         f, m = [y.strip() for y in x.split(" ")]
-        df["first_name"], df["middle_name"], df["last_name"] = [f, m, l]
+        df["first_name"], df["middle_name"], df["last_name"] = f, m, l
 
     return df
 
