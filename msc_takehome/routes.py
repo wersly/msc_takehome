@@ -28,6 +28,12 @@ def process_report_df(df):
     # convert `None` to empty string
     df = df.fillna(value="")
 
+    # convert database col names to human friendly
+    df = df.rename(
+        mapper=lambda col: col.replace("_", " ").title(),
+        axis="columns"
+    )
+
     return df
 
 
