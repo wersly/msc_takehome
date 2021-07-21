@@ -1,16 +1,16 @@
-# Create Package
+# One-time Setup
 ```
-# pip freeze, excluding locally developed packages
-pip freeze --exclude-editable > requirements.txt
+# create a virtual env for this project
+python -m venv $(pwd)
+```
 
-# create package
-python setup.py sdist
+# Work On This Project
+```
+# activate virtual env
+source bin/activate
 
-# check package contents
-tar --list -f dist/msc_takehome-1.0.0.tar.gz
-
-# register package for local development
-python setup.py develop
+# install requirements
+pip install -r requirements.txt
 ```
 
 # Run the App
@@ -21,6 +21,21 @@ python msc_takehome/main.py
 # Run the Tests
 ```
 python -m unittest discover
+```
+
+# Packaging
+```
+# pip freeze, excluding locally developed packages
+pip freeze --exclude-editable > requirements.txt
+
+# create package
+python setup.py sdist
+
+# check package contents
+tar --list -f dist/msc_takehome-1.0.0.tar.gz
+
+# register package for local use and development
+python setup.py develop
 ```
 
 # Instructions
