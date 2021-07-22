@@ -1,9 +1,9 @@
-Note, this project was developed in `Python 3.9.5`. If you are having any issues running this code, please try working within a venv based on `Python 3.9.5`.
+Note, this project was developed in `Python 3.9.5`. If you are having any issues running this code, please try working within a venv based specifically on `Python 3.9.5`.
 
 # One-time Setup
 ```
-# create a virtual env for this project
-python -m venv $(pwd)
+# create a virtual env for this project, based on your locally designated version of python3
+python3 -m venv $(pwd)
 ```
 
 # Install / Work On This Project
