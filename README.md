@@ -6,13 +6,16 @@ Note, this project was developed in `Python 3.9.5`. If you are having any issues
 python -m venv $(pwd)
 ```
 
-# Work On This Project
+# Install / Work On This Project
 ```
 # activate virtual env
 source bin/activate
 
 # install requirements
 pip install -r requirements.txt
+
+# locally install the package
+python setup.py develop
 ```
 
 # Run the App
@@ -25,19 +28,16 @@ python msc_takehome/main.py
 python -m unittest discover
 ```
 
-# Packaging
+# Additional / Useful Packaging Commands
 ```
 # pip freeze, excluding locally developed packages
 pip freeze --exclude-editable > requirements.txt
 
-# create package
+# create a source distribution
 python setup.py sdist
 
-# check package contents
+# check dist contents
 tar --list -f dist/msc_takehome-1.0.0.tar.gz
-
-# register package for local use and development
-python setup.py develop
 ```
 
 # Instructions
