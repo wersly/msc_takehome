@@ -1,4 +1,4 @@
-Note, this project was developed in `Python 3.9.5`. If you are having any issues working with this code, please try working within a venv that is running `Python 3.9.5`.
+Note, this project was developed in `Python 3.9.5`. If you are having any issues running this code, please try working within a venv based on `Python 3.9.5`.
 
 # One-time Setup
 ```
