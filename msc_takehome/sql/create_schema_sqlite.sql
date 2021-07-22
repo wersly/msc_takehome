@@ -10,8 +10,8 @@ create table names (
 -- ie, one instrument can exist in multiple different section designations, but that instrument should not be duplicated within its section
 create table instruments (
   id integer primary key autoincrement,
-  instrument varchar(255),
-  section varchar(255),
+  instrument varchar(255) not null,
+  section varchar(255) not null,
   unique(instrument, section)
 );
 
@@ -25,8 +25,8 @@ create table assignments_by_name(
 
 create table assignments (
   id integer primary key autoincrement,
-  player_id integer,
-  instrument_id integer,
+  player_id integer not null,
+  instrument_id integer not null,
   foreign key (player_id) references names(id),
   foreign key (instrument_id) references instruments(id)
 );
