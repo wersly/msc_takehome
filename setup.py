@@ -5,5 +5,6 @@ setup(
     version="1.0.0",
     author="Warren Ersly",
     author_email="warren.b.ersly@gmail.com",
-    packages=find_packages()
+    packages=find_packages(),
+    include_package_data=True
 )
